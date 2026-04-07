@@ -2,11 +2,17 @@
 
 # Application start
 
-## debug mode (no secret necessary)
+## bedrock app secret
+
+define before application start
+
+export AWS_BEARER_TOKEN_BEDROCK=....
+
+## debug mode (no user credentials necessary)
 
 > export DEBUG_MODE=True
 
-use:  'Bearer my-api-key'
+in http header use:  Authorization: 'Bearer my-api-key'
 
 ## regular mode
 
