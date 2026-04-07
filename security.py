@@ -9,6 +9,7 @@ from flask import jsonify, request
 
 REGION = os.getenv("AWS_REGION", "us-east-1")
 API_KEYS_SECRET_NAME = os.getenv("API_KEYS_SECRET_NAME", "bedrock/api-keys")
+DEBUG_MODE = os.getenv("DEBUG_MODE")
 
 secrets_client = boto3.client("secretsmanager", region_name=REGION)
 
@@ -37,17 +38,11 @@ def _load_api_keys_config_dummy() -> Dict[str, Any]:
       }
     }
     """
-    # response = secrets_client.create_secret(
-    #     Name='my-dummy-secret',
-    #     Description='A test secret',
-    #     SecretString=json.dumps({'username':'admin','password':'password123',\
-    #     'keys':{'my-api-key': {'role': 'admin', 'permissions': ['bedrock:invoke']}}})
-    # )
     return {'keys': {'my-api-key': {'role': "admin", 'permissions': ["bedrock:invoke"]}}}
 
 
 def _authenticate_and_authorize(api_key: str, required_permission: str) -> Dict[str, Any]:
-    config = _load_api_keys_config_dummy() if os.getenv("DEBUG_MODE") == "True" else _load_api_keys_config()
+    config = _load_api_keys_config() if DEBUG_MODE != "True" else _load_api_keys_config_dummy()
     keys = config.get("keys", {})
     principal = keys.get(api_key)
     if not principal:
