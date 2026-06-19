@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, jsonify, request
 
-from agent import ContentAgent
+from agent import InputVerifier
 from bedrock_service import invoke_bedrock
 from security import require_api_key
 
