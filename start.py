@@ -2,14 +2,21 @@ import os
 
 from flask import Flask, jsonify, request
 
-from agent import InputVerifier
-from bedrock_service import invoke_bedrock
+from bedrock_service import call_main_agent
+from inputVerifier import process
 from security import require_api_key
 
 REQUIRED_PERMISSION = "bedrock:invoke"
 
 app = Flask(__name__)
-agent = ContentAgent()
+
+
+@app.after_request
+def add_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    return response
 
 
 @app.post("/v1/content/process")
@@ -22,11 +29,11 @@ def process_content():
         return jsonify({"error": "`content` field is required"}), 400
 
     try:
-        processed = agent.process(raw_content)
+        processed = process(raw_content)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    bedrock_result = invoke_bedrock(processed["cleaned_content"])
+    bedrock_result = call_main_agent(processed["cleaned_content"])
 
     return jsonify(
         {
